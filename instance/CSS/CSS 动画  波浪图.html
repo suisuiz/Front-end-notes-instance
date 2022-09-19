@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>波浪图</title>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="wave">
+      <p class="title"><span>数据</span><span>共享申请</span></p>
+      <div class="wave1"></div>
+      <div class="wave2"></div>
+      <div class="wave3"></div>
+    </div>
+  </div>
+</body>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+
+  .wave {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(58, 160, 255, 0.5);
+    font-size: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    animation: water-wave linear infinite;
+  }
+
+  .wave1 {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: -30%;
+    background: #3aa0ff;
+    opacity: 0.7;
+    width: 200%;
+    height: 200%;
+    border-radius: 40%;
+    animation: inherit;
+    animation-duration: 5s;
+  }
+
+  .wave2 {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: -40%;
+    background: #319bff;
+    opacity: 0.7;
+    width: 200%;
+    height: 200%;
+    border-radius: 35%;
+    animation: inherit;
+    animation-duration: 7s;
+  }
+
+  .wave3 {
+    display: block;
+    position: absolute;
+    top: 60%;
+    left: -40%;
+    background: #1888fc;
+    opacity: 0.3;
+    width: 200%;
+    height: 200%;
+    border-radius: 33%;
+    animation: inherit;
+    animation-duration: 11s;
+  }
+
+  @keyframes water-wave {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+</style>
+
+</html>
