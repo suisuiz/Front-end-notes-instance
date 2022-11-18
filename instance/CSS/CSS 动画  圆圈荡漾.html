@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>圈圈荡漾</title>
+</head>
+
+<body>
+  <div class="wrap">
+    <div style="margin: 30px auto; width: 300px">
+      <i class="circleRipple"></i>
+      <span style="margin-left: 30px">圈圈荡漾</span>
+    </div>
+
+  </div>
+</body>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+
+  /* 圆圈荡漾 circleRipple*/
+  .circleRipple {
+    position: relative;
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+  }
+
+  .circleRipple:after {
+    content: '';
+    /* 注：before,after伪类必须加 content:'';*/
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    left: -7px;
+    top: -7px;
+    border: 4px solid #0093DD;
+    border-radius: 30px;
+    z-index: 1;
+    opacity: 0;
+    -webkit-animation: ripple 3s ease-out infinite;
+    -moz-animation: ripple 3s ease-out infinite;
+    animation: ripple 3s ease-out infinite;
+  }
+
+  /* 荡漾动画 ripple*/
+  @keyframes ripple {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+
+    25% {
+      transform: scale(0);
+      opacity: .1;
+    }
+
+    50% {
+      transform: scale(.1);
+      opacity: .3;
+    }
+
+    75% {
+      transform: scale(.5);
+      opacity: .5;
+    }
+
+    100% {
+      transform: scale(1);
+      opacity: 0;
+    }
+  }
+
+  @-webkit-keyframes ripple {
+    0% {
+      -webkit-transform: scale(0);
+      opacity: 0;
+    }
+
+    25% {
+      -webkit-transform: scale(0);
+      opacity: .1;
+    }
+
+    50% {
+      -webkit-transform: scale(.1);
+      opacity: .3;
+    }
+
+    75% {
+      -webkit-transform: scale(.5);
+      opacity: .5;
+    }
+
+    100% {
+      -webkit-transform: scale(1);
+      opacity: 0;
+    }
+  }
+</style>
+
+</html>
