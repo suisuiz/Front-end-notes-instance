@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>动态显示文字</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    .text-content {
+      height: 500px;
+      color: #fff;
+      line-height: 2;
+      margin: 50px auto;
+      padding: 40px 30px;
+      box-sizing: border-box;
+      overflow: scroll;
+    }
+
+    .text-content .each-line {
+      width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      animation: textShow 2s forwards;
+    }
+
+    .notes_red {
+      color: #f00;
+    }
+
+    .notes_yellow {
+      color: yellow;
+    }
+
+    @keyframes textShow {
+      from {
+        width: 0px;
+      }
+
+      to {
+        width: 100%;
+      }
+    }
+
+    /*定义滚动条样式*/
+    /*定义滚动条高宽及背景 高宽分别对应横竖滚动条的尺寸*/
+    ::-webkit-scrollbar {
+      width: 0.01rem;
+      height: 0.01rem;
+      background-color: #fff;
+    }
+
+    /*定义滚动条轨道 内阴影+圆角*/
+    ::-webkit-scrollbar-track {
+      -webkit-box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.3);
+      border-radius: 0.1rem;
+      background-color: #fff;
+    }
+
+    /*定义滑块 内阴影+圆角*/
+    ::-webkit-scrollbar-thumb {
+      border-radius: 0.1rem;
+      -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+      background-color: #fff;
+    }
+
+    pre:not(:empty) {
+      /* overflow: hidden; */
+      background: rgb(48, 48, 48);
+      border: 1px solid #ccc;
+      max-height: 44.6%;
+      width: 70%;
+      /* font-size: 14px; */
+      font-family: monospace;
+      padding: 10px 10px 20px;
+      white-space: pre-wrap;
+      outline: 0;
+      opacity: .9;
+    }
+  </style>
+</head>
+
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+
+<body>
+  <pre class="text-content" id="text-content"></pre>
+</body>
+<script>
+
+  // var divscll = document.getElementById('text-content');
+  // divscll.scrollTop = divscll.scrollHeight;
+
+  var m = 0;
+
+  var coder = function () {
+
+  }
+
+  var time = 1000;
+  coder.prototype = {
+    constructor: coder,
+    load: function (code) {
+      setTimeout(function () {
+        $(".text-content").append("<p class='each-line'>" + code + "</p>");
+      }, time);
+      time = time + 1000;
+    },
+    setStyle: function (className, styles, seconds) {
+      var seconds = seconds ? seconds : 0;
+      for (var key in styles) {
+        (function (key) {
+          time += seconds;
+          setTimeout(function () {
+            $("." + className).css(key, styles[key]);
+          }, time);
+        })(key);
+      }
+    }
+  }
+
+  var c = new coder();
+
+  // c.load("<span>文件包含漏洞检测：Post http://www.oa.com/login.php?id=../phpinfo.php</span>&nbsp;&nbsp;&nbsp;<span class='notes_yellow'>命令执行失败</span>");
+  // c.load("<span>文件包含漏洞检测：Post http://www.oa.com/login.php?id=../../../../../etc/passwd</span>&nbsp;&nbsp;&nbsp;<span class='notes_yellow'>命令执行失败</span>");
+  // c.load("<span>文件包含漏洞检测：Post http://www.oa.com/login.php?id=../../../../../c:/boot.ini</span>&nbsp;&nbsp;&nbsp;<span class='notes_yellow'>命令执行失败</span>");
+  // c.load("<span>文件包含漏洞检测：Post http://www.oa.com/login.php?id=../usr/etc/php.ini</span>&nbsp;&nbsp;&nbsp;<span class='notes_yellow'>命令执行失败</span>");
+  // c.load("<span>命令执行漏洞检测：Post http://www.oa.com/cms/exec/commandecec.php?ip=127.0.0.1|whoami</span>&nbsp;&nbsp;&nbsp;<span class='notes_yellow'>命令执行失败</span>");
+  // c.load("<span>命令执行漏洞检测：Post http://www.oa.com/cms/exec/commandecec.php?ip=127.0.0.1; id</span>&nbsp;&nbsp;&nbsp;<span class='notes_yellow'>命令执行失败</span>");
+  // c.load("<span>命令执行漏洞检测：Post http://www.oa.com/cms/exec/commandecec.php?ip=127.0.0.1; cat ${IFS}commandexec.php</span>&nbsp;&nbsp;&nbsp;<span class='notes_yellow'>命令执行失败</span>");
+  // c.load("<span>SQL漏洞检测：Post http://www.oa.com/index.php?id=1 and 1=1</span>&nbsp;&nbsp;&nbsp;<span class='notes_red'>命令执行成功</span>");
+  // c.load("<span>SQL漏洞检测：Post http://www.oa.com/index.php?id=1 and 1=2</span>&nbsp;&nbsp;&nbsp;<span class='notes_red'>命令执行成功</span>");
+  // c.load("<span>SQL漏洞检测：Post http://www.oa.com/index.php?id=1 order by 1</span>&nbsp;&nbsp;&nbsp;<span class='notes_red'>命令执行成功</span>");
+  // c.load("<span>XXS跨站漏洞检测：Post http://www.oa.com/index.php?name=< script>alert('ctfs')< /script></span>&nbsp;&nbsp;&nbsp;<span class='notes_yellow'>命令执行失败</span>");
+  // c.load("<span>XXS跨站漏洞检测：Post http://www.oa.com/index.php?name=< img src=1 onerror=alert(/ctfs/) /></span>&nbsp;&nbsp;&nbsp;<span class='notes_yellow'>命令执行失败</span>");
+  // c.load('<br>')
+  // c.load("<span>===========================检测结果===========================</span>");
+  // c.load("<span>经过漏洞探测，该网站存在<span class='notes_red'>SQL注入漏洞</span>");
+
+
+
+  // c.load("<span>判断注入点  sqlmap - u “http:// www.oa.com /index.php?id=A” --random-agent --delay=0.5 --batch -v “4”  --level=3</span>&nbsp;&nbsp;&nbsp;<span class='notes_red'>命令执行成功</span>");
+  // c.load("<span>列举数据库信息  sqlmap - u “http:// www.oa.com /index.php?id=A” -v 1 --dbs</span>&nbsp;&nbsp;&nbsp;<span class='notes_red'>命令执行成功</span>");
+  // c.load("<span>显示当前数据库  sqlmap - u “http:// www.oa.com /index.php?id=A” -v 1 --current-db</span>&nbsp;&nbsp;&nbsp;<span class='notes_red'>命令执行成功</span>");
+  // c.load("<span>列举数据库用户  sqlmap - u “http:// www.oa.com /index.php?id=A” -v 1 --users</span>&nbsp;&nbsp;&nbsp;<span class='notes_red'>命令执行成功</span>");
+  // c.load("<span>指定库名表名列出所有字段： sqlmap - u “http:// www.oa.com /index.php?id=A” -v 1 -D vhost48330 -T admin --columns</span>&nbsp;&nbsp;&nbsp;<span class='notes_red'>命令执行成功</span>");
+  // c.load("<span>指定库名表名字段出指定字段 sqlmap - u “http:// www.oa.com /index.php?id=A” -v 1  -D vhost48330 -T admin -C ac，id，password --dump</span>&nbsp;&nbsp;&nbsp;<span class='notes_red'>命令执行成功</span>");
+  // c.load('<br>')
+  c.load("<span>===========================漏洞利用成功===========================</span>");
+
+  var str = '动态的数据';
+  c.load(str);
+  var arr = [{ name: 'name', password: 'password', tel: 'tel' }];
+  arr.forEach((item) => {
+    stra = item.name + item.tel;
+    c.load(stra);
+  })
+
+  c.load('nihdhfhd');
+
+</script>
+
+</html>
