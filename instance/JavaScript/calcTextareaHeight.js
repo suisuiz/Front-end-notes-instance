@@ -1,3 +1,5 @@
+// https://github.com/ElemeFE/element/blob/dev/packages/input/src/calcTextareaHeight.js
+
 let hiddenTextarea
 
 const HIDDEN_STYLE = `
