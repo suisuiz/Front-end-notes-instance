@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>实现平行四边形 和 梯形</title>
+	</head>
+
+	<body>
+		<h1>横向：skewX 、竖向：skewY</h1>
+		<div style="display: flex;">
+			<div class="body">
+				<h1>方案 1：包含处理</h1>
+				<div style="margin-top: 100px;">
+					<div class="button">
+						<div class='content'>
+							<img
+								src='https://img1.baidu.com/it/u=3486651663,3991438881&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' />
+							<span>工作</span>
+						</div>
+					</div>
+					<div class="button">
+						<div class='content'>
+							<img
+								src='https://img1.baidu.com/it/u=3486651663,3991438881&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' />
+							<span>管理</span>
+						</div>
+					</div>
+					<div class="button end">
+						<div class='content con_end'>
+							<img
+								src='https://img1.baidu.com/it/u=3486651663,3991438881&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' />
+							<span>经济</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="body">
+				<h1>方案 2：伪类处理</h1>
+				<div style="margin-top: 100px;">
+					<div class="button2">
+						<div>
+							<img
+								src='https://img1.baidu.com/it/u=3486651663,3991438881&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' />
+							<span>工作</span>
+						</div>
+					</div>
+					<div class="button2">
+						<div>
+							<img
+								src='https://img1.baidu.com/it/u=3486651663,3991438881&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' />
+							<span>管理</span>
+						</div>
+					</div>
+					<div class="button2 end2">
+						<div>
+							<img
+								src='https://img1.baidu.com/it/u=3486651663,3991438881&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' />
+							<span>经济</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+		}
+
+		.body {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		h1 {
+			text-align: center;
+			margin: 50px 0;
+		}
+
+		img {
+			margin-bottom: 6px;
+			width: 20px;
+			height: 20px;
+		}
+
+		/* 第一种 */
+		.button {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+			position: relative;
+			font-size: 10px;
+			width: 34px;
+			height: 100px;
+			color: white;
+			transform: skewY(-45deg);
+			background-image: linear-gradient(to top, #fbc2eb 0%, #a6c1ee 100%);
+		}
+
+		.end {
+			margin-top: -35px;
+			height: 135px;
+			z-index: -1;
+			transform: skewY(45deg);
+		}
+
+		.content {
+			display: block;
+			transform: skewY(45deg);
+		}
+
+		.con_end {
+			margin-top: 35px;
+			transform: skewY(-45deg);
+		}
+
+		/* 第二种 */
+		.button2 {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+			position: relative;
+			font-size: 10px;
+			width: 34px;
+			height: 100px;
+			color: white;
+		}
+
+		.button2::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			background-image: linear-gradient(to top, #fbc2eb 0%, #a6c1ee 100%);
+			z-index: -1;
+			transform: skewY(-45deg);
+		}
+
+		.end2::before {
+			margin-top: -35px;
+			content: '';
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			background-image: linear-gradient(to top, #fbc2eb 0%, #a6c1ee 100%);
+			z-index: -2;
+			transform: skewY(45deg);
+		}
+	</style>
+</html>
