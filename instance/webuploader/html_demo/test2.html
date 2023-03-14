@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Vue文件管理器</title>
+    <!--引入CSS-->
+    <link rel="stylesheet" type="text/css" href="js/webuploader.css" />
+    <!--引入JS-->
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <script src="js/webuploader.js"></script>
+    <script type="text/javascript">
+      $(function () {
+        //文件信息显示区域
+        var $list = $('#thelist')
+        //当前状态
+        var state = 'pending'
+        //初始化Web Uploader
+        var uploader = WebUploader.create({
+          // swf文件路径
+          swf: '${ctx!}/assets/webuploader/Uploader.swf',
+          // 自动上传
+          auto: true,
+          // 是否分片上传
+          chunked: true,
+          // 分片的值
+          chunkSize: 5120000,
+          // 重复上传
+          duplicate: true,
+          // 文件接收服务端。
+          // server: 'https://zk.club077.com/egwedge:6a:7d:d4:54:07:59:01/chat/uploadFile',
+          server: 'http://192.168.10.199:8080/upload',
+          // 请求的参数
+          formData: {},
+          // 验证文件大小
+          fileSingleSizeLimit: 51200000,
+          // 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+          resize: false,
+          // 选择文件的按钮。可选。
+          // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+          pick: '#picker'
+
+          //设置文佳上传的类型格式
+          // accept: {  //不建议使用，使用时选择文件div失效
+          //   title: 'file',
+          //  extensions: 'xls,xlsx,word,doc,ppt,docx,rtf,ppt,txt,pptx,pdf',
+          //  mimeTypes: '.xls,.xlsx,.word,.doc,.ppt,.docx,.rtf,.ppt,.txt,.pptx,.pdf'
+          // }
+        })
+
+        // 当有文件被添加进队列的时候（选择文件后调用）
+        uploader.on('fileQueued', function (file) {
+          console.log('选择文件', file)
+          $list.append('<div id="' + file.id + '" class="item">' + '<h4 class="info">' + file.name + '</h4>' + '<p class="state">等待上传...</p>' + '</div>')
+        })
+
+        // 文件上传过程中创建进度条实时显示。
+        uploader.on('uploadProgress', function (file, percentage) {
+          console.log('上传中', percentage)
+          var $li = $('#' + file.id)
+          $li.find('p.state').text('上传中（' + parseInt(percentage * 100) + '%）')
+        })
+
+        // 文件上传成功后会调用
+        uploader.on('uploadSuccess', function (file, res) {
+          console.log('上传成功后', file)
+          console.log('上传成功后 res==', res)
+          $('#' + file.id)
+            .find('p.state')
+            .text('已上传')
+          // savefilemanager('/vod/uploadfilemanager/' + file.name, file.name)
+        })
+
+        // 文件上传失败后会调用
+        uploader.on('uploadError', function (file, res) {
+          console.error('上传失败后', file, res)
+          $('#' + file.id)
+            .find('p.state')
+            .text('上传出错')
+        })
+
+        // 文件上传完毕后会调用（不管成功还是失败）
+        uploader.on('uploadComplete', function (file, res) {
+          console.log('文件上传 uploadComplete', file)
+          console.log('文件上传 uploadComplete res==', res)
+          $('#' + file.id)
+            .find('.progress')
+            .fadeOut()
+        })
+
+        // 文件上传完毕后会调用（不管成功还是失败）
+        uploader.on('error', function (type) {
+          let errorMessage = ''
+          if (type === 'F_EXCEED_SIZE') {
+            errorMessage = `文件大小不能超过${51200000 / (1024 * 1000)}M`
+          } else if (type === 'Q_EXCEED_NUM_LIMIT') {
+            errorMessage = '文件上传已达到最大上限数'
+          } else {
+            errorMessage = `上传出错！请检查后重新上传！错误代码${type}`
+          }
+          console.error(errorMessage)
+        })
+
+        // all事件（所有的事件触发都会响应到）
+        uploader.on('all', function (type) {
+          if (type === 'startUpload') {
+            state = 'uploading'
+          } else if (type === 'stopUpload') {
+            state = 'paused'
+          } else if (type === 'uploadFinished') {
+            state = 'done'
+          }
+        })
+      })
+    </script>
+    <style>
+      #picker {
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="">
+      <div>
+        <div id="picker">Vue 选择文件</div>
+      </div>
+      <!--用来存放文件信息-->
+      <div id="thelist"></div>
+    </div>
+  </body>
+</html>

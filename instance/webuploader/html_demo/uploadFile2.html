@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+    <title class="title">[文件管理器]</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <!--引入CSS-->
+    <link rel="stylesheet" type="text/css" href="js/webuploader.css" />
+    <style type="text/css">
+      * {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        box-sizing: border-box;
+      }
+      #content {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        background: transparent !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="content"></div>
+  </body>
+  <!--引入JS-->
+  <script src="js/jquery-1.10.2.min.js"></script>
+  <script src="js/webuploader.js"></script>
+  <script type="text/javascript" src="js/vue.min.js"></script>
+  <script type="text/javascript">
+    var vm = new Vue({
+      el: '#content',
+      data: {
+        uploader: null,
+        fileSingleSizeLimit: 10 * 1024 * 1024
+      },
+      mounted() {
+        setTimeout(() => {
+          this.initWebUpload()
+        }, 500)
+      },
+      destroy() {
+        if (this.uploader) {
+          this.uploader.destroy()
+        }
+      },
+      methods: {
+        /**
+         *  文档：http://fex.baidu.com/webuploader/doc/index.html
+         */
+        initWebUpload() {
+          if (this.uploader) {
+            this.uploader.destroy()
+          }
+
+          let { url, name = 'file', size = 10, method = 'POST', header = {}, formData: data = {} } = plus.webview.currentWebview()
+          this.fileSingleSizeLimit = size * 1024 * 1024
+          let chunk_size = 5
+          const uploader = (this.uploader = WebUploader.create({
+            // // swf文件路径
+            // swf: '${ctx!}/assets/webuploader/Uploader.swf',
+            // 自动上传
+            auto: true,
+            // 上传并发数
+            threads: 5,
+            // 是否分片上传
+            chunked: true,
+            // 求值： xxx * 1024 * 1024
+            // 分片的值
+            chunkSize: chunk_size * 1024 * 1024,
+            // 重复上传
+            duplicate: true,
+            // 文件接收服务端。
+            // server: 'http://192.168.10.199:8080/upload',
+            server: url,
+            // 请求的参数
+            formData: data,
+            headers: header,
+            method: method,
+            // 验证文件大小
+            fileSingleSizeLimit: this.fileSingleSizeLimit,
+            // 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+            resize: false,
+            // 选择文件的按钮
+            pick: '#content',
+            multiple: false
+          }))
+          const fun = ['fileQueued', 'uploadProgress', 'uploadSuccess', 'uploadError', 'error']
+          for (const item of fun) {
+            uploader.on(item, this[item])
+          }
+          return uploader
+        },
+        // 当有文件被添加进队列的时候，添加到页面预览
+        fileQueued(file) {
+          let { debug = false, url, header = {}, formData: data = {} } = plus.webview.currentWebview()
+          debug &&
+            console.log(`
+						上传接口地址:${url}\n
+						附件名称:${file.name}\n 
+						附件大小:${file.size}\n
+						请求头:${JSON.stringify(header)}\n
+						参数:${JSON.stringify(data)}
+						`)
+        },
+        // 文件上传过程中创建进度条实时显示。
+        uploadProgress(file, percentage) {
+          // percentage
+          // parseInt(percentage * 100)
+          location.href = 'callback?retype=percent&percent=' + escape(parseInt(percentage * 100))
+        },
+        // 文件上传成功
+        uploadSuccess(file, res) {
+          // console.log('上传成功后 res==', JSON.stringify(res))
+          location.href = `callback?retype=complete&fileName=${escape(file.name)}&responseText=${escape(JSON.stringify(res))}&status=200&msg=${escape('上传成功')}`
+        },
+        // 文件上传失败
+        uploadError(file, res) {
+          console.error('上传失败后 res==', JSON.stringify(res))
+          let code = res.code || 255
+          location.href = `callback?retype=complete&fileName=${escape(file.name)}&status=${code}&responseText=${escape(JSON.stringify(res))}&msg=${escape('上传失败')}`
+        },
+        error(type) {
+          //报错信息
+          let errorMessage = ''
+          if (type === 'F_EXCEED_SIZE') {
+            errorMessage = `文件大小不能超过${this.fileSingleSizeLimit / (1024 * 1024)}M`
+          } else if (type === 'Q_EXCEED_NUM_LIMIT') {
+            errorMessage = '文件上传已达到最大上限数'
+          } else {
+            errorMessage = `上传出错！请检查后重新上传！错误代码${type}`
+          }
+          console.error(errorMessage)
+          location.href = 'callback?retype=complete&status=408&msg=' + escape(errorMessage)
+        }
+      }
+    })
+  </script>
+</html>
