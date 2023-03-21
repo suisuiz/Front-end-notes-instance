@@ -1,37 +1,29 @@
 /*
- * @Descripttion: 说明
+ * @Descripttion: sqlite 说明
  * @Author: SUI
- * @Company: chorustek
- * @Date: 2021-04-23 18:54:44
- * @Version: 1.0.0
- * @LastEditors: SUI
- * @LastEditTime: 2021-08-23 19:11:28
- * @FilePath: \things\common\sqlite.js
  */
 module.exports = {
   dbName: 'wuchat', // 数据库名称
   // dbPath: '_doc/wuchat.db', // 数据库地址,推荐以下划线为开头   _doc/xxx.db
-  dbPath: `_doc/${uni.getStorageSync("userId")}wuchat.db`,
+  dbPath: `_doc/${uni.getStorageSync('userId')}wuchat.db`,
 
   // 更新dbPath
   updatePath(userId) {
-    if (userId) {
-      this.dbPath = `_doc/${userId}wuchat.db`;
-    } else {
-      this.dbPath = `_doc/${uni.getStorageSync("userId")}wuchat.db`;
-    }
+    return new Promise((resolve, reject) => {
+      if (userId) this.dbPath = `_doc/${userId}wuchat.db`
+      resolve()
+    })
   },
 
   // 判断数据库是否打开
   isOpen() {
-    // console.log("sqlite====", uni.getStorageSync("userId"));
-    // console.log("sqlite====", this.dbPath);
+    // console.log("sqlite====", this.dbPath)
     // 数据库打开了就返回 true,否则返回 false
-    var open = plus.sqlite.isOpenDatabase({
+    let open = plus.sqlite.isOpenDatabase({
       name: this.dbName, // 数据库名称
       path: this.dbPath // 数据库地址
     })
-    return open;
+    return open
   },
 
   // 创建数据库 或 有该数据库就打开
@@ -42,10 +34,10 @@ module.exports = {
         name: this.dbName,
         path: this.dbPath,
         success(e) {
-          resolve(e); // 成功回调
+          resolve(e) // 成功回调
         },
         fail(e) {
-          reject(e); // 失败回调
+          reject(e) // 失败回调
         }
       })
     })
@@ -57,17 +49,22 @@ module.exports = {
       plus.sqlite.closeDatabase({
         name: this.dbName,
         success(e) {
-          resolve(e);
+          resolve(e)
         },
         fail(e) {
-          reject(e);
+          reject(e)
         }
       })
     })
   },
 
-  // 数据库建表 sql:'CREATE TABLE IF NOT EXISTS dbTable("id" varchar(50),"time" datetime,"name" TEXT) 
-  // 创建 CREATE TABLE IF NOT EXISTS 、 dbTable 是表名，不能用数字开头、括号里是表格的表头
+  /**
+   * @param {*} dbTable       表名 、不能用数字开头
+   * @param {*} data          表头/表列、 括号里是表格的表头
+   *
+   * CREATE TABLE IF NOT EXISTS  如果不存在 创建表
+   * 数据库建表 sql:'CREATE TABLE IF NOT EXISTS dbTable("id" varchar(50),"time" datetime,"name" TEXT)
+   */
   createTable(dbTable, data) {
     return new Promise((resolve, reject) => {
       // executeSql: 执行增删改等操作的SQL语句
@@ -75,10 +72,10 @@ module.exports = {
         name: this.dbName,
         sql: `CREATE TABLE IF NOT EXISTS ${dbTable}(${data})`,
         success(e) {
-          resolve(e);
+          resolve(e)
         },
         fail(e) {
-          reject(e);
+          reject(e)
         }
       })
     })
@@ -91,134 +88,225 @@ module.exports = {
         name: this.dbName,
         sql: `DROP TABLE ${dbTable}`,
         success(e) {
-          resolve(e);
+          resolve(e)
         },
         fail(e) {
-          reject(e);
+          reject(e)
         }
       })
     })
   },
 
-  // 向表格里添加数据 sql:'INSERT INTO dbTable VALUES('x','x','x')'   对应新增
-  // 或者 sql:'INSERT INTO dbTable ('x','x','x') VALUES('x','x','x')'   具体新增
-  // 插入 INSERT INTO  、 dbTable 是表名、根据表头列名插入列值
+  /**
+   * @param {*} data          直接新增数据
+   * @param {*} condition     具体新增数据
+   *
+   * 向表格里添加数据 sql:'INSERT INTO dbTable VALUES('x','x','x')'   对应新增
+   * 或者 sql:'INSERT INTO dbTable ('x','x','x') VALUES('x','x','x')'   具体新增
+   * 插入 INSERT INTO  、 dbTable 是表名、根据表头列名插入列值
+   */
   insertTableData(dbTable, data, condition) {
     // 判断有没有传参
     if (dbTable !== undefined && data !== undefined) {
-      // 判断传的参是否有值
-      // var bol = (JSON.stringify(data) == "{}");
-      // if (!bol) {
+      let sql = ''
       if (condition == undefined) {
-        var sql = `INSERT INTO ${dbTable} VALUES('${data}')`;
+        sql = `INSERT INTO ${dbTable} VALUES('${data}')`
       } else {
-        var sql = `INSERT INTO ${dbTable} (${condition}) VALUES(${data})`;
+        sql = `INSERT INTO ${dbTable} (${condition}) VALUES(${data})`
       }
-      // console.log(sql);
+      // console.log(sql)
       return new Promise((resolve, reject) => {
         // 表格添加数据
         plus.sqlite.executeSql({
           name: this.dbName,
           sql: sql,
           success(e) {
-            resolve(e);
+            resolve(e)
           },
           fail(e) {
-            reject(e);
+            reject(e)
           }
         })
       })
-      // } else {
-      //   return new Promise((resolve, reject) => { reject("错误添加") })
-      // }
     } else {
       return new Promise((resolve, reject) => {
-        reject("错误添加")
+        reject('错误添加')
       })
     }
   },
 
-  // 根据条件向表格里添加数据  有数据更新、无数据插入 
-  // (建表时需要设置主键) 例如 --- "roomid" varchar(50) PRIMARY KEY
+  /**
+   * 与 insertTableData 类似
+   * 根据条件向表格里添加数据  有数据更新、无数据插入
+   * (建表时需要设置主键) 例如 --- "roomid" varchar(50) PRIMARY KEY
+   */
   insertOrReplaceData(dbTable, data, condition) {
     // 判断有没有传参
     if (dbTable !== undefined && data !== undefined) {
+      let sql = ''
       if (condition == undefined) {
-        var sql = `INSERT OR REPLACE INTO ${dbTable} VALUES('${data}')`;
+        sql = `INSERT OR REPLACE INTO ${dbTable} VALUES('${data}')`
       } else {
-        var sql = `INSERT OR REPLACE INTO ${dbTable} (${condition}) VALUES(${data})`;
+        sql = `INSERT OR REPLACE INTO ${dbTable} (${condition}) VALUES(${data})`
       }
-      // console.log(sql);
+      // console.log(sql)
       return new Promise((resolve, reject) => {
         // 表格添加数据
         plus.sqlite.executeSql({
           name: this.dbName,
           sql: sql,
           success(e) {
-            resolve(e);
+            resolve(e)
           },
           fail(e) {
-            reject(e);
+            reject(e)
           }
         })
       })
     } else {
       return new Promise((resolve, reject) => {
-        reject("错误添加")
+        reject('错误添加')
       })
     }
   },
 
-  // 查询获取数据库里的数据 sql:'SELECT * FROM dbTable WHERE lname = 'lvalue''
-  // 查询 SELECT * FROM 、 dbTable 是表名、 WHERE 查找条件 lname,lvalue 是查询条件的列名和列值
-  selectTableData(dbTable, lname, lvalue, cc, dd) {
+  /**
+   * 与 insertOrReplaceData类似
+   * 根据主键判断、有数据不插入、反之插入
+   * (建表时需要设置主键) 例如 --- "roomid" varchar(50) PRIMARY KEY
+   */
+  insertOrIgnoreData(dbTable, data, condition) {
+    // 判断有没有传参
+    if (dbTable !== undefined && data !== undefined) {
+      let sql = ''
+      if (condition == undefined) {
+        sql = `INSERT OR IGNORE INTO ${dbTable} VALUES('${data}')`
+      } else {
+        sql = `INSERT OR IGNORE INTO ${dbTable} (${condition}) VALUES(${data})`
+      }
+      return new Promise((resolve, reject) => {
+        // 表格添加数据
+        plus.sqlite.executeSql({
+          name: this.dbName,
+          sql: sql,
+          success(e) {
+            // console.log(e);
+            resolve(e)
+          },
+          fail(e) {
+            // console.log(e)
+            reject(e)
+          }
+        })
+      })
+    } else {
+      return new Promise((resolve, reject) => {
+        reject('错误添加')
+      })
+    }
+  },
+
+  /**
+   * @param {*} lname、lname2       查询条件的列名
+   * @param {*} lvalue、lvalue2     查询条件的列值
+   *
+   * 查询 SELECT * FROM 、WHERE 查找条件 lname,lvalue 是查询条件的列名和列值
+   * 查询获取数据库里的数据 sql:'SELECT * FROM dbTable WHERE lname = 'lvalue''
+   */
+  selectTableData(dbTable, lname, lvalue, lname2, lvalue2) {
     if (dbTable !== undefined) {
-      // 第一个是表单名称，后两个参数是列表名，用来检索
-      if (lname !== undefined && cc !== undefined) {
-        // 两个检索条件
-        var sql = `SELECT * FROM ${dbTable} WHERE ${lname} = '${lvalue}' AND ${cc} = '${dd}'`;
+      let sql = ''
+      // 两个检索条件   第一个是表名称，后两个参数是列表名，用来检索
+      if (lname !== undefined && lname2 !== undefined) {
+        sql = `SELECT * FROM ${dbTable} WHERE ${lname} = '${lvalue}' AND ${lname2} = '${lvalue2}'`
       }
-      if (lname !== undefined && cc == undefined) {
-        // 一个检索条件
-        var sql = `SELECT * FROM ${dbTable} WHERE ${lname} = '${lvalue}'`;
-        // console.log(sql);
+      // 一个检索条件
+      if (lname !== undefined && lname2 == undefined) {
+        sql = `SELECT * FROM ${dbTable} WHERE ${lname} = '${lvalue}'`
       }
+      // 无条件直接查表内容
       if (lname == undefined) {
-        var sql = `SELECT * FROM ${dbTable}`;
+        sql = `SELECT * FROM ${dbTable}`
       }
+      // console.log(sql)
       return new Promise((resolve, reject) => {
         // 表格查询数据  执行查询的SQL语句
         plus.sqlite.selectSql({
           name: this.dbName,
           sql: sql,
           success(e) {
-            resolve(e);
+            resolve(e)
           },
           fail(e) {
-            reject(e);
+            reject(e)
           }
         })
       })
     } else {
       return new Promise((resolve, reject) => {
-        reject("错误查询")
-      });
+        reject('错误查询')
+      })
     }
   },
 
-  // 删除表里的数据 sql:'DELETE FROM dbTable WHERE lname = 'lvalue''
-  // 删除 DELETE FROM 、 dbTable 是表名、 WHERE 查找条件 lname,lvalue 是查询条件的列名和列值
-  deleteTableData(dbTable, lname, lvalue, ww, ee) {
+  // 查询 chatlist 数据 排序 根据 stick、time 倒序
+  selectChatList() {
+    let sql = `SELECT * FROM chatlist order by stick desc,time desc`
+    return new Promise((resolve, reject) => {
+      // 表格查询数据  执行查询的SQL语句
+      plus.sqlite.selectSql({
+        name: this.dbName,
+        sql: sql,
+        success(e) {
+          resolve(e)
+        },
+        fail(e) {
+          console.log(e)
+          reject(e)
+        }
+      })
+    })
+  },
+
+  // 模糊查询
+  queryTableData(dbTable, lname, lvalue) {
+    let sql = `SELECT * FROM ${dbTable} WHERE ${lname}  LIKE '%${lvalue}%';`
+    // console.log(sql)
+    return new Promise((resolve, reject) => {
+      // 表格查询数据  执行查询的SQL语句
+      plus.sqlite.selectSql({
+        name: this.dbName,
+        sql: sql,
+        success(e) {
+          resolve(e)
+        },
+        fail(e) {
+          console.log(e)
+          reject(e)
+        }
+      })
+    })
+  },
+
+  /**
+   * @param {*} lname、lname2       删除条件的列名
+   * @param {*} lvalue、lvalue2     删除条件的列值
+   *
+   * 删除 DELETE FROM
+   * 删除表里的数据 sql:'DELETE FROM dbTable WHERE lname = 'lvalue''
+   */
+  deleteTableData(dbTable, lname, lvalue, lname2, lvalue2) {
     if (dbTable !== undefined) {
+      let sql = ''
       if (lname == undefined) {
-        var sql = `DELETE FROM ${dbTable}`;
+        sql = `DELETE FROM ${dbTable}`
       } else {
-        if (ww !== undefined) {
+        if (lname2 !== undefined) {
           // 两个检索条件
-          var sql = `DELETE FROM ${dbTable} WHERE ${lname} = '${lvalue}' AND ${ww} = '${ee}'`;
+          sql = `DELETE FROM ${dbTable} WHERE ${lname} = '${lvalue}' AND ${lname2} = '${lvalue2}'`
         } else {
           // 一个检索条件
-          var sql = `DELETE FROM ${dbTable} WHERE ${lname} = '${lvalue}'`;
+          sql = `DELETE FROM ${dbTable} WHERE ${lname} = '${lvalue}'`
         }
       }
       return new Promise((resolve, reject) => {
@@ -227,60 +315,101 @@ module.exports = {
           name: this.dbName,
           sql: sql,
           success(e) {
-            resolve(e);
+            resolve(e)
           },
           fail(e) {
-            reject(e);
+            reject(e)
           }
         })
       })
     } else {
       return new Promise((resolve, reject) => {
-        reject("错误删除")
-      });
+        reject('错误删除')
+      })
     }
   },
 
-  // 修改数据表里的数据 sql:"UPDATE dbTable SET 列名 = '列值',列名 = '列值' WHERE lname = 'lvalue'"
-  // 修改 UPDATE 、 dbTable 是表名, data: 要修改的列名=修改后列值, lname,lvalue 是查询条件的列名和列值
-  updateTableData(dbTable, data, lname, lvalue) {
-    if (lname == undefined) {
-      var sql = `UPDATE ${dbTable} SET ${data}`;
+  /**
+   * @param {*} data                要修改的列名=修改后列值
+   * @param {*} lname、lname2       修改条件的列名
+   * @param {*} lvalue、lvalue2     修改条件的列值
+   *
+   * 修改 UPDATE
+   * 修改数据表里的数据 sql:"UPDATE dbTable SET 列名 = '列值',列名 = '列值' WHERE lname = 'lvalue'"
+   */
+  updateTableData(dbTable, data, lname, lvalue, lname2, lvalue2) {
+    if (dbTable !== undefined) {
+      let sql = ''
+      if (lname == undefined) {
+        sql = `UPDATE ${dbTable} SET ${data}`
+      } else {
+        if (lname2 !== undefined) {
+          // 两个检索条件
+          sql = `UPDATE ${dbTable} SET ${data} WHERE ${lname} = '${lvalue}' AND ${lname2} = '${lvalue2}'`
+        } else {
+          // 一个检索条件
+          sql = `UPDATE ${dbTable} SET ${data} WHERE ${lname} = '${lvalue}'`
+        }
+      }
+      // WHERE 前面是要修改的列名、列值，后面是条件的列名、列值
+      return new Promise((resolve, reject) => {
+        // 修改表数据
+        plus.sqlite.executeSql({
+          name: this.dbName,
+          sql: sql,
+          success(e) {
+            resolve(e)
+          },
+          fail(e) {
+            reject(e)
+          }
+        })
+      })
     } else {
-      var sql = `UPDATE ${dbTable} SET ${data} WHERE ${lname} = '${lvalue}'`;
-    }
-    // WHERE 前面是要修改的列名、列值，后面是条件的列名、列值
-    return new Promise((resolve, reject) => {
-      // 修改表数据
-      plus.sqlite.executeSql({
-        name: this.dbName,
-        sql: sql,
-        success(e) {
-          resolve(e);
-        },
-        fail(e) {
-          reject(e);
-        }
+      return new Promise((resolve, reject) => {
+        reject('错误删除')
       })
-    })
+    }
   },
 
-  // 获取指定数据条数  sql:"SELECT * FROM dbTable ORDER BY 'id' DESC LIMIT 15 OFFSET 'num'"
-  // dbTable 表名, ORDER BY 代表排序默认正序, id 是排序的条件 DESC 代表倒序，从最后一条数据开始拿
-  // LIMIT 15 OFFSET '${num}',这句的意思是跳过 num 条拿 15 条数据, num 为跳过多少条数据是动态值
-  // 例 初始num设为0，就从最后的数据开始拿15条，下次不拿刚获取的数据，所以可以让num为15，这样就能一步一步的拿完所有的数据
-  pullSQL(dbTable, id, num) {
-    return new Promise((resolve, reject) => {
-      plus.sqlite.selectSql({
-        name: this.dbName,
-        sql: `SELECT * FROM ${dbTable} ORDER BY '${id}' DESC LIMIT 15 OFFSET '${num}'`,
-        success(e) {
-          resolve(e);
-        },
-        fail(e) {
-          reject(e);
-        }
+  /**
+   * @param {*} sort_condition        排序的条件
+   * @param {*} num       跳过 num 条数据  分页动态值   例 num 为 0，就从最后的数据开始拿xx条
+   *
+   * 排序 -- 默认正序  ORDER BY
+   * 升序 -- 正序   ASC
+   * 降序 -- 倒序   DESC  --  从最后一条数据开始拿
+   * LIMIT 15 OFFSET '${num}',这句的意思是跳过 num 条拿 15 条数据, num 为跳过多少条数据是动态值
+   *
+   * 获取指定数据条数  sql:"SELECT * FROM dbTable ORDER BY 'sort_condition' DESC LIMIT 15 OFFSET 'num'"
+   */
+  orderBySQL(dbTable, lname, lvalue, sort_condition, num = 0, limit_num = 15) {
+    // SELECT * FROM dbTable WHERE condition ORDER BY column1  ASC | DESC LIMIT 15 OFFSET ''
+    if (dbTable !== undefined) {
+      let sql = ''
+      if (lname == undefined) {
+        sql = `SELECT * FROM ${dbTable} ORDER BY '${sort_condition}' DESC LIMIT ${limit_num} OFFSET ${num}`
+      } else {
+        sql = `SELECT * FROM ${dbTable} WHERE ${lname} = '${lvalue}' ORDER BY ${sort_condition} DESC LIMIT ${limit_num} OFFSET ${num}`
+      }
+      // console.log(sql);
+      return new Promise((resolve, reject) => {
+        plus.sqlite.selectSql({
+          name: this.dbName,
+          sql: sql,
+          success(e) {
+            // console.log(e);
+            resolve(e)
+          },
+          fail(e) {
+            reject(e)
+          }
+        })
       })
-    })
+    } else {
+      return new Promise((resolve, reject) => {
+        reject('错误查询')
+      })
+    }
   }
 }
