@@ -171,8 +171,8 @@ module.exports = {
   },
 
   /**
-   * 与 insertOrReplaceData类似
-   * 根据主键判断、有数据不插入、反之插入
+   * 与 insertOrReplaceData 类似
+   * 根据主键判断、有数据 不插入、反之插入
    * (建表时需要设置主键) 例如 --- "roomid" varchar(50) PRIMARY KEY
    */
   insertOrIgnoreData(dbTable, data, condition) {
