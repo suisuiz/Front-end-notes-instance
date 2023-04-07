@@ -1,10 +1,6 @@
 <!--
  * @Descripttion: 
  * @Author: SUI
- * @Date: 2021-11-22 17:30:13
- * @LastEditors: SUI
- * @LastEditTime: 2021-11-22 18:06:07
- * @FilePath: \phone-hubc:\Users\wangy\Desktop\git\instance-hub\VUE\scan.vue
 -->
 <template>
   <div id="scan">

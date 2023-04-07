@@ -1,10 +1,6 @@
 <!--
  * @Descripttion: Flv
  * @Author: SUI
- * @Date: 2022-04-25 09:35:11
- * @LastEditors: SUI
- * @LastEditTime: 2022-05-13 22:01:43
- * @FilePath: \instance\VUE\Flv 播放器\Flv.vue
 -->
 <template>
   <div class="page">

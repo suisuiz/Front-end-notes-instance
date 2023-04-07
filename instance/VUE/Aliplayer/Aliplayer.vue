@@ -1,10 +1,6 @@
 <!--
  * @Descripttion: 
  * @Author: SUI
- * @Date: 2021-12-20 17:16:52
- * @LastEditors: SUI
- * @LastEditTime: 2022-05-04 20:19:28
- * @FilePath: \undefinedc:\Users\wangy\Desktop\git\instance-hub\instance\VUE\Aliplayer.vue
 -->
 <template>
   <div class="hello">
