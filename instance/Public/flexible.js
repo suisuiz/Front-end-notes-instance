@@ -1,11 +1,8 @@
 /*
+
  * @Descripttion: flexible.js
  * @Author: SUI
- * @Date: 2021-10-28 11:05:16
- * @LastEditors: SUI
- * @LastEditTime: 2021-10-28 11:41:07
- * @FilePath: \demo-big-screen\src\common\flexible.js
- */
+   */
 
 (function flexible(window, document) {
   var docEl = document.documentElement

@@ -1,10 +1,6 @@
 /*
  * @Descripttion: 封装 websocket
  * @Author: SUI
- * @Date: 2021-11-03 17:03:06
- * @LastEditors: SUI
- * @LastEditTime: 2021-11-03 17:03:16
- * @FilePath: \demo-big-screen\src\common\websocket.js
  */
 
 let Socket = ''
@@ -15,23 +11,22 @@ export const resetSocket = () => {
   Socket = ''
 }
 
-
 /**
  * 建立websocket连接
  * @param {string} url ws地址
  */
 export const createSocket = (url, data) => {
   Socket && Socket.close()
-  console.log(Socket);
+  console.log(Socket)
   if (!Socket) {
-    console.log(url, data);
+    console.log(url, data)
     if (url === undefined) {
-      url = window.localStorage.getItem("wsUrl")
+      url = window.localStorage.getItem('wsUrl')
     }
     if (data === undefined) {
-      data = window.localStorage.getItem("wsData")
+      data = window.localStorage.getItem('wsData')
     }
-    console.log(url, data);
+    console.log(url, data)
     Socket = new WebSocket(url)
     console.log('建立websocket连接')
     Socket.onopen = onopenWS
@@ -53,7 +48,7 @@ const onopenWS = () => {
 
 /**连接失败重连 */
 const onerrorWS = () => {
-  console.log(Socket);
+  console.log(Socket)
   Socket && Socket.close()
   clearInterval(setIntervalWesocketPush)
   console.log('连接失败重连中')
@@ -64,19 +59,21 @@ const onerrorWS = () => {
 }
 
 /**WS数据接收统一处理 */
-const onmessageWS = e => {
-  window.dispatchEvent(new CustomEvent('onmessageWS', {
-    detail: {
-      data: e.data
-    }
-  }))
+const onmessageWS = (e) => {
+  window.dispatchEvent(
+    new CustomEvent('onmessageWS', {
+      detail: {
+        data: e.data
+      }
+    })
+  )
 }
 
 /**
  * 发送数据但连接未建立时进行处理等待重发
  * @param {any} message 需要发送的数据
  */
-const connecting = message => {
+const connecting = (message) => {
   setTimeout(() => {
     if (Socket) {
       if (Socket.readyState === 0) {
@@ -96,7 +93,7 @@ const connecting = message => {
  * 发送数据
  * @param {any} message 需要发送的数据
  */
-export const sendWSPush = message => {
+export const sendWSPush = (message) => {
   if (Socket !== null && Socket.readyState === 3) {
     Socket && Socket.close()
     createSocket()
@@ -119,7 +116,7 @@ const oncloseWS = () => {
     Socket = null
     setTimeout(() => {
       createSocket()
-    }, 10000);
+    }, 10000)
   }
 }
 
