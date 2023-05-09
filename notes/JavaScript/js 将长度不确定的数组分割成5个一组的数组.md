@@ -53,26 +53,78 @@ console.log(result2[activeArrIndex - 1])
 
 ### 知识点
 
->reduce方法：
->reduce(function(pre,item,index,arr){},第一次回调函数初始值)
+>`reduce`方法：
+>`reduce(function(pre,item,index,arr){}`,第一次回调函数初始值)
 >参数：回调函数和第一次回调函数的初始值
 >回调函数参数：
->pre 上一次回调函数执行的返回值
->item 数组元素
->index 数组下标
+>`pre` 上一次回调函数执行的返回值
+>`item` 数组元素
+>`index` 数组下标
 >arr 数组
 >1.如果没有第二个参数，且回调函数没有返回值。
->第一次pre为数组的第一个元素，item为数组的第二个元素；第二次pre为undefined，item为数组第三个元素…
+>第一次`pre`为数组的第一个元素，`item`为数组的第二个元素；第二次`pre`为undefined，item为数组第三个元素…
 >2.如果没有第二个参数，但是有返回值。
->第一次pre为数组的第一个元素，item为数组的第二个元素；第二次pre为第一次回调函数返回值，item为数组第三个元素
+>第一次`pre`为数组的第一个元素，item为数组的第二个元素；第二次`pre`为第一次回调函数返回值，item为数组第三个元素
 >3.如果有第二个参数，也回调函数有返回值。
->第一次pre为第二个参数，item为数组第一个元素；第二次pre为第一次回调函数的返回值，item为数组的第二次元素…
+>第一次`pre`为第二个参数，item为数组第一个元素；第二次`pre`为第一次回调函数的返回值，item为数组的第二次元素…
 
 
 
 > slice方法
-> 含义：从beginIndex下标开始，截取number个元素组成新数组。【不会改变原数组】
+> 含义：从`beginIndex`下标开始，截取number个元素组成新数组。【不会改变原数组】
 > 参数：
-> 一个参数：从beginIndex截取到最后一个元素
-> 两个参数：beginIndex[开始数组的下标]，number[元素个数]
+> 一个参数：从`beginIndex`截取到最后一个元素
+> 两个参数：`beginIndex`[开始数组的下标]，number[元素个数]
 > 返回值：截取出的新数组，如果没有截取到元素则返回空数组。
+
+
+
+## js 将数组分割为N个对象一组（如，两两一组，三三一组等）
+
+### 方案1
+
+```
+let result = []
+let data = [
+  { name: 'chen', age: '25' },
+
+  { name: 'chen', age: '25' },
+
+  { name: 'chen', age: '25' },
+
+  { name: 'chen', age: '25' },
+
+  { name: 'chen', age: '25' },
+
+  { name: 'chen', age: '25' },
+
+  { name: 'chen', age: '25' },
+
+  { name: 'chen', age: '25' },
+
+  { name: 'chen', age: '25' },
+
+  { name: 'chen', age: '25' }
+]
+for (let i = 0; i < data.length; i += 3) {
+  result.push(data.slice(i, i + 3))
+}
+```
+
+### 方案2
+
+```
+var spArray = function (N, Q) {
+  var R = [],
+    F
+  for (F = 0; F < Q.length; ) {
+    R.push(Q.slice(F, (F += N)))
+  }
+  return R
+}
+
+var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+console.log(spArray(5, arr))
+// [[1,2,3,4,5],[6,7,8,9,10],[11,12,13,14]]
+```
+
