@@ -16,6 +16,32 @@
 <qiun-data-charts type="ring" :opts="ringOpts" :chartData="chartData" />
 ```
 
+图表点击
+
+> @getIndex 来获取点击的索引
+
+```vue
+<qiun-data-charts type="ring" :opts="!isfull ? (!isbig ? ringOpts : ringOpts2) : ringOpts3" :chartData="chartData" @getIndex="clickRing" />
+
+<script>
+    clickRing(event) {
+      let that = this
+      let { currentIndex, legendIndex } = event
+      // currentIndex 点击内容的下标 -1为点 legend 隐藏当前
+      // legendIndex -1 为隐藏所有 legend
+      if (currentIndex === -1 && legendIndex !== -1) {
+        that.legendArr[legendIndex].show = !that.legendArr[legendIndex].show
+      }
+      let newArr = that.legendArr.filter((item) => item.show)
+      if (currentIndex !== -1) {
+        let name = newArr[currentIndex].name
+        // console.log('点击了====', name)
+        that.$emit('charts_event', name)
+      }
+    }
+</script>
+```
+
 
 
 ## 二、echarts
