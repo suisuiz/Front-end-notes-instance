@@ -1,6 +1,6 @@
 /*
  * @Descripttion: 封装 websocket
- * @FilePath: \advertising-screen\src\common\websocket.js
+ * @Author: SUI
  */
 
 let Socket = ''
@@ -10,13 +10,13 @@ let setIntervalWesocketPush = null
  * 建立websocket连接
  * @param {string} url ws地址
  */
- export const createSocket = (url, data = 'login') => {
-    Socket && Socket.close()
-    if (!Socket) {
+export const createSocket = (url, data = 'login') => {
+  Socket && Socket.close()
+  if (!Socket) {
     if (url === undefined) {
-      url = window.sessionStorage.getItem("wsUrl")
+      url = window.sessionStorage.getItem('wsUrl')
     }
-    console.log(url);
+    console.log(url)
     Socket = new WebSocket(url)
     console.log('建立websocket连接')
     Socket.onopen = onopenWS
@@ -26,10 +26,10 @@ let setIntervalWesocketPush = null
 
     // 发送数据
     sendWSPush(data)
-    } else {
+  } else {
     console.log('websocket已连接')
-    }
- }
+  }
+}
 
 /**打开WS之后发送心跳 */
 const onopenWS = () => {
@@ -48,20 +48,22 @@ const onerrorWS = () => {
 }
 
 /**WS数据接收统一处理 */
-const onmessageWS = e => {
-  window.dispatchEvent(new CustomEvent('onmessageWS', {
-    detail: {
-      data: e.data
-    }
-  }))
+const onmessageWS = (e) => {
+  window.dispatchEvent(
+    new CustomEvent('onmessageWS', {
+      detail: {
+        data: e.data
+      }
+    })
+  )
 }
 
 /**
  * 发送数据但连接未建立时进行处理等待重发
  * @param {any} message 需要发送的数据
  */
- const connecting = message => {
-    setTimeout(() => {
+const connecting = (message) => {
+  setTimeout(() => {
     if (Socket) {
       if (Socket.readyState === 0) {
         connecting(message)
@@ -73,27 +75,27 @@ const onmessageWS = e => {
         }
       }
     }
-    }, 1000)
- }
+  }, 1000)
+}
 
 /**
  * 发送数据
  * @param {any} message 需要发送的数据
  */
- export const sendWSPush = message => {
-    if (Socket !== null && Socket.readyState === 3) {
+export const sendWSPush = (message) => {
+  if (Socket !== null && Socket.readyState === 3) {
     Socket.close()
     createSocket()
-    } else if (Socket.readyState === 1) {
+  } else if (Socket.readyState === 1) {
     if (typeof message === 'string') {
       Socket.send(message)
     } else {
       Socket.send(JSON.stringify(message))
     }
-    } else if (Socket.readyState === 0) {
+  } else if (Socket.readyState === 0) {
     connecting(message)
-    }
- }
+  }
+}
 
 /**断开重连 */
 const oncloseWS = () => {
@@ -103,7 +105,7 @@ const oncloseWS = () => {
     Socket = null
     setTimeout(() => {
       createSocket()
-    }, 10000);
+    }, 10000)
   }
 }
 
@@ -111,10 +113,10 @@ const oncloseWS = () => {
  * @param {number} time 心跳间隔毫秒 默认5000
  * @param {string} ping 心跳名称 默认字符串ping
  */
- export const sendPing = (time = 5000, ping = 'ping') => {
-    clearInterval(setIntervalWesocketPush)
-    // Socket.send(ping)
-    setIntervalWesocketPush = setInterval(() => {
+export const sendPing = (time = 5000, ping = 'ping') => {
+  clearInterval(setIntervalWesocketPush)
+  // Socket.send(ping)
+  setIntervalWesocketPush = setInterval(() => {
     Socket.send(ping)
-    }, time)
- }
+  }, time)
+}
