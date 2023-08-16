@@ -1,6 +1,6 @@
 <!--
  * @Descripttion: rtmp推流
- * @LastEditTime: 2023-08-16 18:33:43
+ * @Author: SUI
 -->
 <template>
   <view>
