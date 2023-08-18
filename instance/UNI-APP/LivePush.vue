@@ -126,7 +126,6 @@ export default {
       let host = getIP(siteid, 'host')
       let src = `rtmp://${host}/live/${that.meeting_id}?token=${app.getToken().token}`
       that.pushUrl = src
-      console.log('推流地址==============', that.pushUrl)
       if (that.meetingState === 'join') {
         setTimeout(() => {
           that.pushState()
@@ -164,8 +163,16 @@ export default {
       }
     },
 
-    statechange(e) {
-      console.log('statechange:***********************' + JSON.stringify(e))
+    statechange(event) {
+      let that = this
+      console.log('statechange:***********************' + JSON.stringify(event))
+      let { detail } = event
+      if (detail && detail.code === -1307) {
+        if (that.pushLiveBol) that.stopLive()
+        setTimeout(() => {
+          that.startLive()
+        }, 1500)
+      }
     },
     netstatus(e) {
       // console.log('netstatus:***********************' + JSON.stringify(e))
