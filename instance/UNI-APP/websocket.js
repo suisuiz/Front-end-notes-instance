@@ -34,27 +34,32 @@ class Websocket {
         cmd: 'login',
         seq: that.sendId(),
         data: {
-          token: '',
+          token: that.getToken().token,
           type: 1
         }
       }
-      login.data.token = that.getToken().token
-      log.writeFile(JSON.stringify(login))
-      that.socketTask.send({
-        data: JSON.stringify(login),
-        success() {
-          // console.log('连接成功', host, siteid)
-        }
-      })
+      if (that.edge) log.writeFile(JSON.stringify(login))
+      that.sendTask(JSON.stringify(login), 'login')
+    }
+    this.sendPull = () => {
+      let that = this
+      let pull = {
+        cmd: 'pull',
+        seq: that.sendId(),
+        data: {}
+      }
+      if (that.edge) log.writeFile(JSON.stringify(pull))
+      that.sendTask(JSON.stringify(pull))
     }
     this.onMessage = (event) => {
       let data = JSON.parse(event.data)
       if (data.cmd == 'login') {
-        log.writeFile(JSON.stringify(data))
+        if (this.edge) log.writeFile(JSON.stringify(data))
         let code = data.response.code
         if (code == 0) {
-          console.log('登录成功', host, siteid)
+          console.log('登录成功', this.ip, this.siteid)
           this.loginok = true
+          this.sendPull()
           this.onLogin(data.response.data)
           this.loginReset()
           this.heartCheck()
@@ -66,16 +71,18 @@ class Websocket {
         }
       } else {
         if (data.cmd == 'msg') {
-          log.writeFile(JSON.stringify(data))
+          if (this.edge) log.writeFile(JSON.stringify(data))
           this.onChat(data)
         } else if (data.cmd == 'notify') {
-          log.writeFile(JSON.stringify(data))
+          if (this.edge) log.writeFile(JSON.stringify(data))
           this.onNotify(data)
         } else if (data.cmd == 'heartbeat') {
-          log.writeFile(JSON.stringify(data))
+          if (this.edge) log.writeFile(JSON.stringify(data))
           this.heartCheck()
         } else if (data.cmd == 'revoke') {
           this.onRevoke(data)
+        } else if (data.cmd == 'pull') {
+          this.onPull(data.response.data)
         }
       }
     }
@@ -84,6 +91,7 @@ class Websocket {
     this.onChat = (data) => {}
     this.onNotify = (data) => {}
     this.onRevoke = (data) => {}
+    this.onPull = (data) => {}
 
     this.createWebSocket()
   }
@@ -112,7 +120,7 @@ class Websocket {
       data: { refresh_code: refresh_token, c3id: c3id },
       success(res) {
         if (res.statusCode == 200) {
-          log.writeFile('refreshToken' + JSON.stringify(res.data))
+          if (that.edge) log.writeFile('refreshToken' + JSON.stringify(res.data))
           if (res.data.code == 0) {
             let tokenObj = {
               token: res.data.AccessToken,
@@ -138,7 +146,7 @@ class Websocket {
     let { scheme, ip, siteid } = that
     that.loginok = false
     let url = `${scheme}://${ip}/${siteid}/ws`
-    log.writeFile(url)
+    if (that.edge) log.writeFile(url)
     that.socketTask = uni.connectSocket({
       url: url,
       complete: () => {
@@ -152,18 +160,18 @@ class Websocket {
     let that = this
     that.socketTask.onClose((e) => {
       // console.warn('onClose', that.ip, that.siteid, e)
-      log.writeFile('onClose')
+      if (that.edge) log.writeFile('onClose')
       that.onClose()
       that.reconnect()
     })
     that.socketTask.onError((e) => {
       // console.error('onError', that.ip, that.siteid, e)
-      log.writeFile('onError')
+      if (that.edge) log.writeFile('onError')
       that.onError()
       that.reconnect()
     })
     that.socketTask.onOpen(() => {
-      log.writeFile('onOpen')
+      if (that.edge) log.writeFile('onOpen')
       that.onOpen()
       that.loginCheck()
     })
@@ -182,8 +190,15 @@ class Websocket {
     }, this.reconnectTimeout)
   }
 
-  send(msg) {
-    this.socketTask.send(msg)
+  sendTask(data, action) {
+    this.socketTask.send({
+      data,
+      success() {
+        let text = ''
+        if (action === 'login') text = '连接成功'
+        // console.log(text, host, siteid)
+      }
+    })
   }
 
   heartCheck() {
@@ -203,9 +218,7 @@ class Websocket {
         cmd: 'heartbeat',
         seq: this.sendId()
       }
-      this.send({
-        data: JSON.stringify(heartbeat)
-      })
+      this.sendTask(JSON.stringify(heartbeat))
       this.pongTimeoutId = setTimeout(() => {
         this.socketTask.close()
       }, this.pongTimeout)
@@ -231,15 +244,16 @@ class Websocket {
   close() {
     let that = this
     that.forbidReconnect = true
+    that.ip = ''
     that.heartReset()
     that.socketTask.close({
       success(res) {
         // console.log('关闭成功', that.ip)
-        log.writeFile('关闭成功', res)
+        if (that.edge) log.writeFile('关闭成功', res)
       },
       fail(err) {
         // console.error('关闭失败', that.ip)
-        log.writeFile('关闭失败', err)
+        if (that.edge) log.writeFile('关闭失败', err)
       }
     })
   }
@@ -248,10 +262,10 @@ class Websocket {
     let that = this
     that.socketTask.close({
       success(res) {
-        log.writeFile('关闭成功', res)
+        if (that.edge) log.writeFile('关闭成功', res)
       },
       fail(err) {
-        log.writeFile('关闭失败', err)
+        if (that.edge) log.writeFile('关闭失败', err)
       }
     })
   }
