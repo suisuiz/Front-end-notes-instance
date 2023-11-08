@@ -26,7 +26,7 @@ uni.getNetworkType({
       ssid = ssid.replace(/(^\"*)|(\"*$)/g, '')
       // 当前 WIFI 的 BSSID (MAC 地址)
       let bssid = info.getBSSID()
-      if (bssid !== null) {
+      if (ssid && bssid !== null) {
         wifiInfos = { name: ssid, id: bssid }
         console.log('*********获取的当前 WIFI', wifiInfos)
       }
