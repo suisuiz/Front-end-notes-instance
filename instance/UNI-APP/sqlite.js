@@ -249,6 +249,38 @@ module.exports = {
     }
   },
 
+  /**
+   * @param {*} column_name    新增的列名
+   * @param {*} data_type      新增列类型
+   *
+   * ALTER TABLE table_name ADD COLUMN column_name data_type
+   * 改数据库表、新增一列  sql:'ALTER TABLE users ADD COLUMN address TEXT;'
+   */
+  insertTableColumn(dbTable, column_name, data_type) {
+    // ALTER TABLE table_name ADD COLUMN column_name data_type
+    if (dbTable !== undefined) {
+      let sql = `ALTER TABLE ${dbTable} ADD COLUMN ${column_name} ${data_type}`
+      // console.log(sql)
+      return new Promise((resolve, reject) => {
+        // 表格查询数据  执行查询的SQL语句
+        plus.sqlite.selectSql({
+          name: this.dbName,
+          sql: sql,
+          success(e) {
+            resolve(e)
+          },
+          fail(e) {
+            reject(e)
+          }
+        })
+      })
+    } else {
+      return new Promise((resolve, reject) => {
+        reject('错误查询')
+      })
+    }
+  },
+
   // 查询 chatlist 数据 排序 根据 stick、time 倒序
   selectChatList() {
     let sql = `SELECT * FROM chatlist order by stick desc,time desc`
@@ -337,18 +369,22 @@ module.exports = {
    * 修改 UPDATE
    * 修改数据表里的数据 sql:"UPDATE dbTable SET 列名 = '列值',列名 = '列值' WHERE lname = 'lvalue'"
    */
-  updateTableData(dbTable, data, lname, lvalue, lname2, lvalue2) {
+  updateTableData(dbTable, data, lname, lvalue, lname2, lvalue2, lname3, lvalue3) {
     if (dbTable !== undefined) {
       let sql = ''
       if (lname == undefined) {
         sql = `UPDATE ${dbTable} SET ${data}`
       } else {
-        if (lname2 !== undefined) {
-          // 两个检索条件
-          sql = `UPDATE ${dbTable} SET ${data} WHERE ${lname} = '${lvalue}' AND ${lname2} = '${lvalue2}'`
+        if (lname3 !== undefined) {
+          sql = `UPDATE ${dbTable} SET ${data} WHERE ${lname} = '${lvalue}' AND ${lname2} = '${lvalue2}' AND ${lname3} = '${lvalue3}'`
         } else {
-          // 一个检索条件
-          sql = `UPDATE ${dbTable} SET ${data} WHERE ${lname} = '${lvalue}'`
+          if (lname2 !== undefined) {
+            // 两个检索条件
+            sql = `UPDATE ${dbTable} SET ${data} WHERE ${lname} = '${lvalue}' AND ${lname2} = '${lvalue2}'`
+          } else {
+            // 一个检索条件
+            sql = `UPDATE ${dbTable} SET ${data} WHERE ${lname} = '${lvalue}'`
+          }
         }
       }
       // WHERE 前面是要修改的列名、列值，后面是条件的列名、列值
@@ -367,7 +403,7 @@ module.exports = {
       })
     } else {
       return new Promise((resolve, reject) => {
-        reject('错误删除')
+        reject('错误更新')
       })
     }
   },
