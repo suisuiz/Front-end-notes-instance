@@ -1,22 +1,13 @@
-目录说明
-========================
+# 目录结构
 
 ```bash
-├── Uploader.swf                      # SWF文件，当使用Flash运行时需要引入。
 ├
-├── webuploader.js                    # 完全版本。
-├── webuploader.min.js                # min版本
+├── js/webuploader.js                    # 适配安卓版本
+├── js/webuploader.min.js                # 适配ios版本
 ├
-├── webuploader.flashonly.js          # 只有Flash实现的版本。
-├── webuploader.flashonly.min.js      # min版本
+├── uploadFile2.html                  # 适配安卓版本 html
+├── ios_upload2.html                  # 适配ios版本 html
 ├
-├── webuploader.html5only.js          # 只有Html5实现的版本。
-├── webuploader.html5only.min.js      # min版本
+├── ios_upload.html                  # 适配ios版本 html(旧版、废弃)
 ├
-├── webuploader.noimage.js            # 去除图片处理的版本，包括HTML5和FLASH.
-├── webuploader.noimage.min.js        # min版本
-├
-├── webuploader.custom.js             # 自定义打包方案，请查看 Gruntfile.js，满足移动端使用。
-└── webuploader.custom.min.js         # min版本
 ```
-
