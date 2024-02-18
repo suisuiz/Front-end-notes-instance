@@ -1,0 +1,126 @@
+<!--
+ * @Descripttion: 
+ * @LastEditTime: 2023-12-15 13:56:45
+ * @FilePath: \things-visitor\hybrid\html\recorder.html
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Online Audio Recorder</title>
+  </head>
+  <body>
+    <!-- <button id="startRecord">Start Recording</button> -->
+
+    <script src="./webview.js"></script>
+    <script>
+      document.addEventListener('UniAppJSBridgeReady', function () {
+        uni.webView.getEnv(function (res) {
+          console.log('当前环境：' + JSON.stringify(res))
+
+          document.addEventListener('plusready', function () {
+            // plus.camera.getCamera()
+            const a = plus.audio.getRecorder()
+            a.record()
+            a.stop()
+            console.log('给权限了')
+            uni.postMessage({
+              data: {
+                msg: '给权限了'
+              }
+            })
+          })
+
+          let mediaRecorder
+          let audioChunks = []
+          // let startRecordButton = document.getElementById('startRecord')
+          // startRecordButton.addEventListener('click', startRecording)
+
+          setTimeout(() => {
+            startRecording()
+          }, 800)
+
+          async function startRecording() {
+            console.log('startRecordings')
+            // alert('startRecordings')
+            let micList
+            try {
+              let devices = await navigator.mediaDevices.enumerateDevices()
+              micList = devices.filter((device) => device.kind === 'audioinput' && device.deviceId != 'default')
+              // micList 就是可用的麦克风设备列表
+              // console.log('麦克风列表', JSON.stringify(micList))
+              for (let index = 0; index < micList.length; index++) {
+                const device = micList[index]
+                console.log(device.kind + ': ' + device.lable + ' id = ' + device.deviceId)
+              }
+            } catch (error) {
+              console.error('enumerateDevices', error)
+            }
+
+            let device_id = ''
+            if (micList.length > 0) device_id = micList[0].deviceId
+            console.log('device_id==', device_id)
+            try {
+              // const stream = navigator.mediaDevices.getUserMedia({ audio: { deviceId: device_id } })
+              // const stream = navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: device_id } } })
+              const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+              mediaRecorder = new MediaRecorder(stream)
+              mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                  audioChunks.push(event.data)
+                }
+              }
+              mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' })
+                const audioUrl = URL.createObjectURL(audioBlob)
+
+                let form = new FormData()
+                let file_name = `recorder${new Date().getTime()}.mp3`
+                form.append('file', audioBlob, file_name)
+                const xhr = new XMLHttpRequest()
+                xhr.open('POST', 'https://zk.club077.com/file_to_text')
+                xhr.onreadystatechange = () => {
+                  if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                      alert(`上传成功${xhr.responseText}`)
+                      console.log('上传成功', xhr.responseText)
+                      uni.postMessage({
+                        data: {
+                          msg: '上传成功',
+                          data: xhr
+                        }
+                      })
+                    } else {
+                      alert('上传失败')
+                      console.error('上传失败' + xhr.status)
+                      uni.postMessage({
+                        data: {
+                          msg: '上传失败',
+                          data: xhr
+                        }
+                      })
+                    }
+                  }
+                }
+                xhr.onerror = (event) => {
+                  console.error('Error:', event)
+                }
+                xhr.send(form)
+              }
+              mediaRecorder.start()
+              setTimeout(() => {
+                mediaRecorder.stop()
+              }, 10 * 1000)
+            } catch (error) {
+              console.error('Error accessing microphone:', error)
+
+              // setTimeout(() => {
+              //   startRecording()
+              // }, 1000)
+            }
+          }
+        })
+      })
+    </script>
+  </body>
+</html>
