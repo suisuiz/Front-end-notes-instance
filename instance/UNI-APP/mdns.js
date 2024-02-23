@@ -3,12 +3,14 @@
  * @Author: SUI
  */
 let websocket = require('@/common/websocket.js')
+let serverType = '_nfd._tcp'
 let mDiscoveryListener = null
 let mResolveListener = null
 let mNsdManager = null
+let DB = require('@/common/sqlite.js')
 module.exports = {
   // mdns 自动发现同网段设备服务
-  switchIp() {
+  async switchIp() {
     let that = this
     // #ifdef APP-PLUS
     if (plus.os.name == 'Android') {
@@ -49,45 +51,24 @@ module.exports = {
       }, 4000)
     } else {
       // test
-      // let ip = '192.168.10.199'
       let ip = '192.168.10.248'
       let name = '00:f1:f3:21:72:cd'
       let storage_ip = uni.getStorageSync('localAddress')
-      // 获取到 IP 更新 websocket
-      if (storage_ip !== ip) {
-        uni.setStorageSync('localAddress', ip)
-      }
+      getApp().mdns_siteId = name
       if (getApp().socketTask2 != null) {
-        if (ip !== getApp().socketTask2.ip) {
+        if (ip !== getApp().socketTask2.ip || (ip === getApp().socketTask2.ip && name !== getApp().socketTask2.siteid)) {
+          // 修改WiFi缓存表数据
+          let updateSql = `ip = '${ip}', name = '${name}'`
+          await DB.updateTableData('wificache', updateSql, 'wifi', wifi_infos.id)
+          // 和缓存比较 不一致更新缓存
+          if (storage_ip !== ip) uni.setStorageSync('localAddress', ip)
           getApp().socketTask2.close()
-          getApp().socketTask2 = new websocket(`http://${ip}`, true, name)
-          getApp().socketTask2.onLogin = (event) => {
-            getApp().sockeDataLoginAndPull(event, true, 'login')
-          }
-          getApp().socketTask2.onPull = (event) => {
-            getApp().sockeDataLoginAndPull(event, true, 'pull')
-          }
-          getApp().socketTask2.onChat = (event) => {
-            getApp().sockeDataMsg(event, true)
-          }
-          getApp().socketTask2.onNotify = (event) => {
-            getApp().sockeDataNotify(event, true)
-          }
+          that.connectSocket(ip, name, 'mdns发现-发现ip当前连接不一致')
         }
       } else {
-        getApp().socketTask2 = new websocket(`http://${ip}`, true, name)
-        getApp().socketTask2.onLogin = (event) => {
-          getApp().sockeDataLoginAndPull(event, true, 'login')
-        }
-        getApp().socketTask2.onPull = (event) => {
-          getApp().sockeDataLoginAndPull(event, true, 'pull')
-        }
-        getApp().socketTask2.onChat = (event) => {
-          getApp().sockeDataMsg(event, true)
-        }
-        getApp().socketTask2.onNotify = (event) => {
-          getApp().sockeDataNotify(event, true)
-        }
+        // 和缓存比较 不一致更新缓存
+        if (storage_ip !== ip) uni.setStorageSync('localAddress', ip)
+        that.connectSocket(ip, name, 'mdns发现-当前未连接')
       }
     }
     // #endif
@@ -96,7 +77,6 @@ module.exports = {
   async findMDNS(wifi_infos) {
     let that = this
     let storage_ip = uni.getStorageSync('localAddress')
-    let DB = require('@/common/sqlite.js')
     let wifi_ip = ''
     console.log('******************当前连接的 WIFI', wifi_infos)
     if (wifi_infos.id !== '') {
@@ -109,10 +89,10 @@ module.exports = {
           if (getApp().socketTask2 != null) {
             if (ip !== getApp().socketTask2.ip) {
               getApp().socketTask2.close()
-              that.connectSocket(ip, name)
+              that.connectSocket(ip, name, '缓存表-发现ip当前连接不一致')
             }
           } else {
-            that.connectSocket(ip, name)
+            that.connectSocket(ip, name, '缓存表-当前未连接')
           }
         }
       } catch (error) {
@@ -120,7 +100,7 @@ module.exports = {
       }
     }
 
-    let mServerType = '_nfd._tcp' // 服务类型
+    let mServerType = serverType // 服务类型
     let Context = plus.android.importClass('android.content.Context')
     // 获取应用主Activity实例对象系统服务NSD_SERVICE方法
     if (mNsdManager == null) {
@@ -176,12 +156,12 @@ module.exports = {
                 // 和缓存比较 不一致更新缓存
                 if (storage_ip !== ip) uni.setStorageSync('localAddress', ip)
                 getApp().socketTask2.close()
-                that.connectSocket(ip, name)
+                that.connectSocket(ip, name, 'mdns发现-发现ip当前连接不一致')
               }
             } else {
               // 和缓存比较 不一致更新缓存
               if (storage_ip !== ip) uni.setStorageSync('localAddress', ip)
-              that.connectSocket(ip, name)
+              that.connectSocket(ip, name, 'mdns发现-当前未连接')
             }
             // getApp().WEBSOCKET2()
 
@@ -215,22 +195,23 @@ module.exports = {
 
   // 连socket
   connectSocket(ip, name) {
+    const APPVUE = getApp()
     uni.setStorageSync('localAddress', ip)
-    getApp().socketTask2 = new websocket(`http://${ip}`, true, name, getApp().siteId)
-    getApp().socketTask2.onLogin = (event) => {
-      getApp().sockeDataLoginAndPull(event, true, 'login')
+    APPVUE.socketTask2 = new websocket(`http://${ip}`, true, name, APPVUE.siteId)
+    APPVUE.socketTask2.onLogin = (event) => {
+      APPVUE.sockeDataLoginAndPull(event, true, 'login')
     }
-    getApp().socketTask2.onPull = (event) => {
-      getApp().sockeDataLoginAndPull(event, true, 'pull')
+    APPVUE.socketTask2.onPull = (event) => {
+      APPVUE.sockeDataLoginAndPull(event, true, 'pull')
     }
-    getApp().socketTask2.onChat = (event) => {
-      getApp().sockeDataMsg(event, true)
+    APPVUE.socketTask2.onChat = (event) => {
+      APPVUE.sockeDataMsg(event, true)
     }
-    getApp().socketTask2.onNotify = (event) => {
-      getApp().sockeDataNotify(event, true)
+    APPVUE.socketTask2.onNotify = (event) => {
+      APPVUE.sockeDataNotify(event, true)
     }
-    getApp().socketTask2.onRevoke = (event) => {
-      getApp().sockeDataRevoke(event.response.data, event.seq, true)
+    APPVUE.socketTask2.onRevoke = (event) => {
+      APPVUE.sockeDataRevoke(event.response.data, event.seq, true)
     }
   }
 }
