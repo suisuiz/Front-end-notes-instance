@@ -17,7 +17,7 @@ module.exports = {
 
   // 判断数据库是否打开
   isOpen() {
-    // console.log("sqlite====", this.dbPath)
+    // console.log('sqlite====', this.dbPath)
     // 数据库打开了就返回 true,否则返回 false
     let open = plus.sqlite.isOpenDatabase({
       name: this.dbName, // 数据库名称
@@ -213,20 +213,17 @@ module.exports = {
    * 查询 SELECT * FROM 、WHERE 查找条件 lname,lvalue 是查询条件的列名和列值
    * 查询获取数据库里的数据 sql:'SELECT * FROM dbTable WHERE lname = 'lvalue''
    */
-  selectTableData(dbTable, lname, lvalue, lname2, lvalue2) {
+  selectTableData(dbTable, lname, lvalue, lname2, lvalue2, lname3, lvalue3) {
     if (dbTable !== undefined) {
-      let sql = ''
-      // 两个检索条件   第一个是表名称，后两个参数是列表名，用来检索
-      if (lname !== undefined && lname2 !== undefined) {
-        sql = `SELECT * FROM ${dbTable} WHERE ${lname} = '${lvalue}' AND ${lname2} = '${lvalue2}'`
-      }
-      // 一个检索条件
-      if (lname !== undefined && lname2 == undefined) {
-        sql = `SELECT * FROM ${dbTable} WHERE ${lname} = '${lvalue}'`
-      }
-      // 无条件直接查表内容
-      if (lname == undefined) {
-        sql = `SELECT * FROM ${dbTable}`
+      let sql = `SELECT * FROM ${dbTable}`
+      if (lname !== undefined) {
+        sql += ` WHERE ${lname} = '${lvalue}'`
+        if (lname2 !== undefined) {
+          sql += ` AND ${lname2} = '${lvalue2}'`
+          if (lname3) {
+            sql += ` AND ${lname3} = '${lvalue3}'`
+          }
+        }
       }
       // console.log(sql)
       return new Promise((resolve, reject) => {
@@ -371,19 +368,13 @@ module.exports = {
    */
   updateTableData(dbTable, data, lname, lvalue, lname2, lvalue2, lname3, lvalue3) {
     if (dbTable !== undefined) {
-      let sql = ''
-      if (lname == undefined) {
-        sql = `UPDATE ${dbTable} SET ${data}`
-      } else {
-        if (lname3 !== undefined) {
-          sql = `UPDATE ${dbTable} SET ${data} WHERE ${lname} = '${lvalue}' AND ${lname2} = '${lvalue2}' AND ${lname3} = '${lvalue3}'`
-        } else {
-          if (lname2 !== undefined) {
-            // 两个检索条件
-            sql = `UPDATE ${dbTable} SET ${data} WHERE ${lname} = '${lvalue}' AND ${lname2} = '${lvalue2}'`
-          } else {
-            // 一个检索条件
-            sql = `UPDATE ${dbTable} SET ${data} WHERE ${lname} = '${lvalue}'`
+      let sql = `UPDATE ${dbTable} SET ${data}`
+      if (lname !== undefined) {
+        sql += ` WHERE ${lname} = '${lvalue}'`
+        if (lname2 !== undefined) {
+          sql += ` AND ${lname2} = '${lvalue2}'`
+          if (lname3) {
+            sql += ` AND ${lname3} = '${lvalue3}'`
           }
         }
       }
